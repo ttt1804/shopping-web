@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  xmlns:sec="http://wwww.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<!--head-->
+
+<head th:replace="~{admin/fragments/head :: head}">
+</head>
+
+<body onload="time()" class="app sidebar-mini rtl">
+
+  <!-- Navbar-->
+  <header th:replace="~{admin/fragments/navbar :: navbar}">
+
+  </header>
+  <!-- Sidebar menu-->
+  <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+  <aside th:replace="~{admin/fragments/sidebar :: sidebar}">
+  </aside>
+
+  <main class="app-content">
+    <div class="app-title">
+      <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item">Danh sách sản phẩm</li>
+        <li class="breadcrumb-item"><a href="#">Thêm sản phẩm</a></li>
+      </ul>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="tile">
+          <h3 class="tile-title">Tạo mới sản phẩm</h3>
+          <div class="tile-body">
+            <div class="row element-button">
+              <div class="col-sm-2">
+                <a class="btn btn-add btn-sm" data-toggle="modal" data-target="#adddanhmuc"><i
+                    class="fas fa-folder-plus"></i> Thêm thể loại</a>
+              </div>
+              <div class="col-sm-2">
+                <a class="btn btn-add btn-sm" data-toggle="modal" data-target="#addNhaCungCap"><i
+                    class="fas fa-folder-plus"></i> Thêm nhà cung cấp</a>
+              </div>
+            </div>
+            <form id="myForm" class="row" method="post" action="/admin/products/add" enctype="multipart/form-data">
+              <div class="form-group col-md-3">
+                <label class="control-label">Tên sản phẩm</label>
+                <input class="form-control" name="name" type="text">
+                <div th:if="${nameError}">
+                  <div class="errors mt-2">
+                    <span class="text-danger" th:text="${nameError}"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group  col-md-3">
+                <label class="control-label">Giá</label>
+                <input class="form-control" name="price" type="number" placeholder="Nhập giá (VND)">
+                <div th:if="${priceError}">
+                  <div class="errors mt-2">
+                    <span class="text-danger" th:text="${priceError}"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group  col-md-3">
+                <label class="control-label">Số lượng</label>
+                <input class="form-control" name="quantity" type="number">
+                <div th:if="${quantityError}">
+                  <div class="errors mt-2">
+                    <span class="text-danger" th:text="${quantityError}"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group  col-md-3">
+                <label class="control-label">Giảm giá</label>
+                <input class="form-control" name="discount" type="number">
+                <div th:if="${discountError}">
+                  <div class="errors mt-2">
+                    <span class="text-danger" th:text="${discountError}"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group col-md-3">
+                <label for="category" class="control-label">Thể loại</label>
+                <select class="form-control" id="category" name="categoryId" required>
+                  <option value="">-- Chọn thể loại --</option>
+                  <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}">
+                  </option>
+                </select>
+                <div th:if="${categoryIdError}">
+                  <div class="errors mt-2">
+                    <span class="text-danger" th:text="${categoryIdError}"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group col-md-3">
+                <label for="producer" class="control-label">Nhà cung cấp</label>
+                <select class="form-control" id="producer" name="producerId" required>
+                  <option value="">-- Chọn nhà cung cấp --</option>
+                  <option th:each="producer : ${producers}" th:value="${producer.id}" th:text="${producer.name}">
+                  </option>
+                </select>
+                <div th:if="${producerIdError}">
+                  <div class="errors mt-2">
+                    <span class="text-danger" th:text="${producerIdError}"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group col-md-12">
+                <label class="control-label">Ảnh sản phẩm</label>
+                <div id="myfileupload">
+                  <input type="file" id="uploadfile" name="image" />
+                </div>
+                <div id="boxchoice">
+                  <a href="javascript:" class="Choicefile"><i class="fas fa-cloud-upload-alt"></i> Chọn ảnh</a>
+                  <p style="clear:both"></p>
+                </div>
+              </div>
+              <div class="form-group col-md-12">
+                <label class="control-label">Mô tả sản phẩm</label>
+                <textarea class="form-control" name="description" id="mota"></textarea>
+              </div>
+            </form>
+          </div>
+          <button id="submitBtn" class="btn btn-save" type="button">Lưu lại</button>
+          <a class="btn btn-cancel" href="/admin/products">Hủy bỏ</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <!--
+MODAL thể loại
+-->
+  <div class="modal fade" id="adddanhmuc" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+
+        <div class="modal-body">
+          <div class="row">
+            <div class="form-group  col-md-12">
+              <span class="thong-tin-thanh-toan">
+                <h5>Thêm mới thể loại </h5>
+              </span>
+            </div>
+            <div class="form-group col-md-12">
+              <form id="addCategory" method="post" th:action="@{/admin/categories/addForProduct}">
+                <label class="control-label">Nhập tên thể loại mới</label>
+                <input class="form-control" name="name" type="text" required>
+              </form>
+            </div>
+          </div>
+          <BR>
+          <button id="submitAddCategory" class="btn btn-save" type="button">Lưu lại</button>
+          <a class="btn btn-cancel" data-dismiss="modal" href="#">Hủy bỏ</a>
+          <BR>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--
+MODAL
+-->
+  <!--
+MODAL nhà cung cấp
+-->
+  <div class="modal fade" id="addNhaCungCap" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+    data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+
+        <div class="modal-body">
+          <div class="row">
+            <div class="form-group  col-md-12">
+              <span class="thong-tin-thanh-toan">
+                <h5>Thêm mới nhà cung cấp </h5>
+              </span>
+            </div>
+            <div class="form-group col-md-12">
+              <form id="addProducer" method="post" th:action="@{/admin/producers/addForProduct}">
+                <label class="control-label">Nhập tên nhà cung cấp</label>
+                <input class="form-control" name="name" type="text" required>
+              </form>
+            </div>
+          </div>
+          <BR>
+          <button id="submitAddProducer" class="btn btn-save" type="button">Lưu lại</button>
+          <a class="btn btn-cancel" data-dismiss="modal" href="#">Hủy bỏ</a>
+          <BR>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--
+MODAL
+-->
+  <script th:src="@{https://cdn.jsdelivr.net/npm/toastify-js}"></script>
+  <script src="http://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+
+  <script th:src="@{/js/bootstrap.min.js}"></script>
+  <script>
+    const form = document.getElementById("myForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    submitBtn.addEventListener("click", function () {
+      form.submit();
+    });
+
+    const formCategory = document.getElementById("addCategory");
+    const submitAddCategory = document.getElementById("submitAddCategory");
+
+    submitAddCategory.addEventListener("click", function () {
+      formCategory.submit();
+    })
+
+    const formProducer = document.getElementById("addProducer");
+    const submitAddProducer = document.getElementById("submitAddProducer");
+    submitAddProducer.addEventListener("click", function () {
+      formProducer.submit();
+    })
+
+
+
+  </script>
+</body>
+
+</html>

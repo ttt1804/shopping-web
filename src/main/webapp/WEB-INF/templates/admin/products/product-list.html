@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://wwww.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<!--head-->
+
+<head th:replace="~{admin/fragments/head :: head}">
+</head>
+
+<body onload="time()" class="app sidebar-mini rtl">
+
+    <!-- Navbar-->
+    <header th:replace="~{admin/fragments/navbar :: navbar}">
+
+    </header>
+    <!-- Sidebar menu-->
+    <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}">
+    </aside>
+
+    <main class="app-content">
+        <div class="app-title">
+            <ul class="app-breadcrumb breadcrumb side">
+                <li class="breadcrumb-item active"><a href="#"><b>Danh sách sản phẩm</b></a></li>
+            </ul>
+            <div id="clock"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="tile">
+                    <div class="tile-body">
+                        <div class="row element-button">
+                            <div class="col-sm-2">
+
+                                <a class="btn btn-add btn-sm" th:href="@{/admin/products/add}" title="Thêm"><i
+                                        class="fas fa-plus"></i>
+                                    Tạo mới sản phẩm</a>
+                            </div>
+                            <div class="col-sm-2">
+                                <a class="btn btn-delete btn-sm print-file js-textareacopybtn" type="button"
+                                    title="Sao chép"><i class="fas fa-copy"></i>Tải từ file</a>
+                            </div>
+                            <div class="col-sm-2">
+                                <a class="btn btn-excel btn-sm" title="In" th:href="@{/admin/products/export}"><i class="fas fa-file-excel"></i> Xuất
+                                    Excel</a>
+                            </div>
+                        </div>
+                        <div id="sampleTable_wrapper"
+                            class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+                            <div class="row">
+                                <div class="col-sm-12 col-md-6">
+                                    <form th:action="@{/admin/products}" id="changePageSizeForm">
+                                        <input type="hidden" name="pageSize" th:value="${pageSize}" />
+                                        <div class="dataTables_length" id="sampleTable_length"><label>Hiện
+                                                <select id="pageSize" class="form-control form-control-sm"
+                                                    th:value="${pageSize}" onchange="changePageSize()">
+                                                    <option th:each="s : ${ {5, 10, 15, 20} }" th:value="${s}"
+                                                        th:text="${s}" th:selected="${s == pageSize}"></option>
+                                                </select> danh mục</label>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="col-sm-12 col-md-6">
+                                    <div id="sampleTable_filter" class="dataTables_filter">
+                                        <form th:action="@{/admin/products}" id="searchForm">
+                                            <label>Tìm kiếm:
+                                                <input type="search" name="keyword" th:value="${keyword}"
+                                                    class="form-control form-control-sm" placeholder="nhập tên sản phẩm"
+                                                    aria-controls="sampleTable">
+                                                <button type="submit" class="btn btn-secondary">
+                                                    <i class="fa fa-search" style="margin-bottom: 0;"
+                                                        aria-hidden="true"></i>
+                                                </button>
+                                            </label>
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table class="table table-hover table-bordered dataTable no-footer">
+                                        <th class="sorting_asc"><input type="checkbox" id="all"></th>
+                                        <th class="sorting">Mã sản phẩm</th>
+                                        <th class="sorting">Tên sản phẩm</th>
+                                        <th class="sorting">Hình ảnh</th>
+                                        <th class="sorting">Giá (VND)</th>
+                                        <th class="sorting">Số lượng</th>
+                                        <th class="sorting">Giảm giá (%)</th>
+                                        <th class="align-middle text-center sorting">Miêu tả</th>
+                                        <th class="sorting">Thể loại</th>
+                                        <th class="sorting">Nhà cung cấp</th>
+                                        <th class="sorting">Chức năng</th>
+                                        <tbody>
+                                            <tr role="row" class="odd" th:each="product : ${products}">
+                                                <td width="10" class="sorting_1"><input type="checkbox" name="check1"
+                                                        value="1"></td>
+                                                <td th:text="${product.id}"></td>
+                                                <td th:text="${product.name}"></td>
+                                                <td>
+                                                    <img th:src="@{'/img/products/' + ${product.image}}" alt=""
+                                                        width="100px;">
+                                                </td>
+                                                <td class="productPrice" th:text="${product.price}"></td>
+                                                <td th:text="${product.quantity}"></td>
+                                                <td th:text="${product.discount}"></td>
+                                                <td th:text="${product.description}"></td>
+                                                <td th:text="${product.category.name}"></td>
+                                                <td th:text="${product.producer.name}"></td>
+                                                <td><button th:attr="onclick=|confirmDelete('${product.id}')|"
+                                                        class="btn btn-primary btn-sm trash" type="button"
+                                                        title="Xóa"><i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                    <button th:attr="onclick=|confirmEdit('${product.id}')|"
+                                                        class="btn btn-primary btn-sm edit" type="button" title="Sửa"
+                                                        id="show-emp" data-toggle="modal" data-target="#ModalUP"><i
+                                                            class="fas fa-edit"></i></button>
+
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div th:unless="${products.size() > 0}">
+                                <span>Không có sản phẩm!</span>
+                            </div>
+                            <nav aria-label="Pagination" th:if="${totalPages > 0}">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/products?' + ${keyword!=null && keyword!=''? 'keyword=' + keyword + '&' : ''} + 'page=' + ${1} + '&size=' + ${pageSize}}"
+                                           th:title="${'Trang đầu'}" rel="tooltip">
+                                            [[${'Đầu'}]]</a>
+                                    </li>
+                                    <li class="page-item font-weight-bold" th:classappend="${currentPage == 1} ? 'disabled'">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/products?' + ${keyword!=null && keyword!=''? 'keyword=' + keyword + '&' : ''} + 'page=' + ${currentPage - 1} + '&size=' + ${pageSize}}"
+                                           th:title="${'Trang trước'}" rel="tooltip">
+                                            [[${'Trước'}]]</a>
+                                    </li>
+                                    <li class="page-item disabled" th:if="${currentPage - 2 > 1}">
+                                        <a class="page-link" href="#">...</a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${page == currentPage} ? 'active'"
+                                        th:each="page : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 1, currentPage + 2 < totalPages ? currentPage + 2 : totalPages)}">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/products?' + ${keyword!=null && keyword!=''? 'keyword=' + keyword + '&' : ''} + 'page=' + ${page} + '&size=' + ${pageSize}}"
+                                           th:title="'Trang ' + ${page}" rel="tooltip">
+                                            [[${page}]]</a>
+                                    </li>
+                                    <li class="page-item disabled" th:if="${currentPage + 2 < totalPages}">
+                                        <a class="page-link" href="#">...</a>
+                                    </li>
+                                    <li class="page-item font-weight-bold" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/products?' + ${keyword!=null && keyword!=''? 'keyword=' + keyword + '&' : ''} + 'page=' + ${currentPage + 1} + '&size=' + ${pageSize}}"
+                                           th:title="'Trang sau'" rel="tooltip">
+                                            [[${'Sau'}]]</a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                                        <a class="page-link"
+                                           th:href="@{'/admin/products?' + ${keyword!=null && keyword!=''? 'keyword=' + keyword + '&' : ''} + 'page=' + ${totalPages} + '&size=' + ${pageSize}}"
+                                           th:title="'Trang cuối'" rel="tooltip">
+                                            [[${'Cuối'}]]</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script type="text/javascript">
+        $('#sampleTable').DataTable();
+        //Thời Gian
+        function time() {
+            var today = new Date();
+            var weekday = new Array(7);
+            weekday[0] = "Chủ Nhật";
+            weekday[1] = "Thứ Hai";
+            weekday[2] = "Thứ Ba";
+            weekday[3] = "Thứ Tư";
+            weekday[4] = "Thứ Năm";
+            weekday[5] = "Thứ Sáu";
+            weekday[6] = "Thứ Bảy";
+            var day = weekday[today.getDay()];
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+            var yyyy = today.getFullYear();
+            var h = today.getHours();
+            var m = today.getMinutes();
+            var s = today.getSeconds();
+            m = checkTime(m);
+            s = checkTime(s);
+            nowTime = h + " giờ " + m + " phút " + s + " giây";
+            if (dd < 10) {
+                dd = '0' + dd
+            }
+            if (mm < 10) {
+                mm = '0' + mm
+            }
+            today = day + ', ' + dd + '/' + mm + '/' + yyyy;
+            tmp = '<span class="date"> ' + today + ' - ' + nowTime +
+                '</span>';
+            document.getElementById("clock").innerHTML = tmp;
+            clocktime = setTimeout("time()", "1000", "Javascript");
+
+            function checkTime(i) {
+                if (i < 10) {
+                    i = "0" + i;
+                }
+                return i;
+            }
+        }
+    </script>
+    <script th:inline="javascript">
+        function confirmDelete(productId) {
+            swal({
+                title: "Cảnh báo",
+                text: "Bạn có chắc chắn là muốn xóa sản phẩm này?",
+                buttons: ["Hủy bỏ", "Đồng ý"],
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+                        window.location.href = '/admin/products/delete/' + productId;
+                    }
+                });
+        }
+        function confirmEdit(productId) {
+            window.location.href = '/admin/products/edit/' + productId;
+        }
+        function searchForm() {
+            $("#searchForm").submit();
+        }
+        function changePageSize() {
+            var size = document.getElementById("pageSize").value;
+            var url = new URL(window.location.href);
+            url.searchParams.set("size", size);
+            window.location.href = url.href;
+        }
+
+        var priceElements = document.getElementsByClassName('productPrice');
+
+        Array.from(priceElements).forEach(function (element) {
+            var price = parseFloat(element.textContent);
+            var formattedPrice = price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            element.textContent = formattedPrice;
+        });
+
+
+    </script>
+
+</body>
+
+</html>
